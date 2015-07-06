@@ -16,7 +16,7 @@
  -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <ripple android:color="@color/grey" />
+        <ripple android:color="@color/sunshine_blue" />
     </item>
 
     <item android:state_activated="true"

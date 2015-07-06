@@ -95,6 +95,18 @@ public class SettingsActivity extends PreferenceActivity
             if (prefIndex >= 0) {
                 preference.setSummary(listPreference.getEntries()[prefIndex]);
             }
+        } else if (key.equals(getString(R.string.pref_location_key))) {
+            @SunshineSyncAdapter.LocationStatus int lStatus = Utility.getLocationStatus(this);
+            String summary = stringValue;
+            switch (lStatus) {
+                case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                    summary = getString(R.string.pref_location_error_description, summary);
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
+                    summary = getString(R.string.pref_location_unknown_description, summary);
+                    break;
+            }
+            preference.setSummary(summary);
         } else {
             // For other preferences, set the summary to the value's simple string representation.
             preference.setSummary(stringValue);
@@ -112,11 +124,16 @@ public class SettingsActivity extends PreferenceActivity
     // start our synchronization here
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if ( key.equals(getString(R.string.pref_location_key)) ) {
+        if (key.equals(getString(R.string.pref_location_key))) {
+            Utility.resetLocationStatus(this);
             SunshineSyncAdapter.syncImmediately(this);
-        } else if ( key.equals(getString(R.string.pref_units_key)) ) {
+        } else if (key.equals(getString(R.string.pref_units_key))) {
             // units have changed. update lists of weather entries accordingly
             getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
+        } else if (key.equals(getString(R.string.pref_location_status_key))) {
+            Preference p = this.findPreference(getString(R.string.pref_location_key));
+            String location = Utility.getPreferredLocation(this);
+            setPreferenceSummary(p, location);
         }
     }
 
