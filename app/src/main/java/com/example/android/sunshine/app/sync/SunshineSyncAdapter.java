@@ -28,6 +28,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.text.format.Time;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
 import com.example.android.sunshine.app.MainActivity;
 import com.example.android.sunshine.app.R;
 import com.example.android.sunshine.app.Utility;
@@ -46,6 +47,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
@@ -74,7 +76,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN,
             LOCATION_STATUS_SERVER_INVALID, LOCATION_STATUS_UNKNOWN,
             LOCATION_STATUS_INVALID})
-    public @interface LocationStatus {};
+    public @interface LocationStatus {}
 
     public static final int LOCATION_STATUS_OK = 0;
     public static final int LOCATION_STATUS_SERVER_DOWN = 1;
@@ -98,7 +100,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         BufferedReader reader = null;
 
         // Will contain the raw JSON response as a string.
-        String forecastJsonStr = null;
+        String forecastJsonStr;
 
         String format = "json";
         String units = "metric";
@@ -131,7 +133,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             if (inputStream == null) {
                 // Nothing to do.
                 return;
@@ -143,7 +145,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                 // But it does make debugging a *lot* easier if you print out the completed
                 // buffer for debugging.
-                buffer.append(line + "\n");
+                buffer.append(line).append("\n");
             }
 
             if (buffer.length() == 0) {
@@ -174,7 +176,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
         }
-        return;
     }
 
     /**
@@ -250,7 +251,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
         // Insert the new weather information into the database
-        Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
+        Vector<ContentValues> cVVector = new Vector<>(weatherArray.length());
 
         // OWM returns daily forecasts based upon the local time of the city that is being
         // asked for, which means that we need to know the GMT offset to translate this data
@@ -323,7 +324,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             cVVector.add(weatherValues);
         }
 
-        int inserted = 0;
         // add to database
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
@@ -371,8 +371,24 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
                     int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
                     Resources resources = context.getResources();
-                    Bitmap largeIcon = BitmapFactory.decodeResource(resources,
-                            Utility.getArtResourceForWeatherCondition(weatherId));
+                    int largeIconWidth = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
+                            resources.getDimensionPixelSize(R.dimen.notification_large_icon_width) :
+                            resources.getDimensionPixelSize(R.dimen.notification_large_icon_default);
+                    int largeIconHeight = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
+                            resources.getDimensionPixelSize(R.dimen.notification_large_icon_height) :
+                            resources.getDimensionPixelSize(R.dimen.notification_large_icon_default);
+                    Bitmap largeIcon;
+                    try {
+                        largeIcon = Glide.with(context)
+                                .load(Utility.getArtUrlForWeatherCondition(context, weatherId))
+                                .asBitmap()
+                                .error(Utility.getArtResourceForWeatherCondition(weatherId))
+                                .into(largeIconWidth, largeIconHeight)
+                                .get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        largeIcon = BitmapFactory.decodeResource(resources,
+                                Utility.getArtResourceForWeatherCondition(weatherId));
+                    }
                     String title = context.getString(R.string.app_name);
 
                     // Define the text of the forecast.

@@ -127,4 +127,15 @@
     <string name="a11y_forecast_icon">Forecast icon: <xliff:g id="condition">%1$s</xliff:g></string>
     <string name="a11y_high_temp">High: <xliff:g id="high">%1$s</xliff:g></string>
     <string name="a11y_low_temp">Low: <xliff:g id="low">%1$s</xliff:g></string>
+
+    <!-- Format for retrieving art from an external source [CHAR LIMIT=NONE] -->
+    <string name="pref_art_pack_key">art_pack</string>
+    <string name="pref_art_pack_label">Art Pack</string>
+    <string name="pref_art_pack_label_sunshine">Sunshine</string>
+    <string name="pref_art_pack_sunshine" translable="false">https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-xxhdpi/art_%s.png</string>
+    <string name="pref_art_pack_label_colored">Colored</string>
+    <string name="pref_art_pack_colored" translable="false">https://raw.githubusercontent.com/udacity/sunshine_icons/master/Archive/Colored/art_%s.png</string>
+    <string name="pref_art_pack_label_mono">Mono</string>
+    <string name="pref_art_pack_mono" translable="false">https://raw.githubusercontent.com/udacity/sunshine_icons/master/Archive/Mono/art_%s.png</string>
+
 </resources>
