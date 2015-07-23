@@ -103,7 +103,7 @@ public class ForecastFragment extends Fragment implements
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(Uri dateUri);
+        void onItemSelected(Uri dateUri);
     }
 
     public ForecastFragment() {
@@ -149,7 +149,7 @@ public class ForecastFragment extends Fragment implements
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mEmptyView = (TextView) rootView.findViewById(R.id.forecast_empty);
+        mEmptyView = (TextView) rootView.findViewById(R.id.listview_forecast_empty);
         // Get a reference to the ListView, and attach this adapter to it.
         mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
         mListView.setEmptyView(mEmptyView);
