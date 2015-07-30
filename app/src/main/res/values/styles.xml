@@ -23,13 +23,16 @@
         <item name="toolbarStyle">@style/Toolbar</item>
     </style>
 
+    <style name="AppTheme.Details" parent="@style/AppTheme">
+    </style>
+
     <style name="Toolbar" parent="Widget.AppCompat.Toolbar">
         <item name="android:background">?attr/colorPrimary</item>
         <item name="popupTheme">@style/Theme.AppCompat.Light</item>
     </style>
 
     <!-- Main activity theme. -->
-    <style name="ForecastTheme" parent="AppTheme">
+    <style name="AppTheme.Main" parent="AppTheme">
         <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine.NoTitle</item>
     </style>
 
@@ -48,5 +51,4 @@
         <!-- Here it's a stub.  In screens of sufficient width, this style includes modifications
         for two-pane layout -->
     </style>
-
 </resources>

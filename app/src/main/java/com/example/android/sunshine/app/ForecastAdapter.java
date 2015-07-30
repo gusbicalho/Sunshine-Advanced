@@ -174,6 +174,13 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         forecastAdapterViewHolder.mLowTempView.setContentDescription(mContext.getString(R.string.a11y_low_temp, lowString));
 
         mICM.onBindViewHolder(forecastAdapterViewHolder, position);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            forecastAdapterViewHolder.mIconView.setTransitionName(
+                    forecastAdapterViewHolder
+                            .mIconView
+                            .getContext()
+                            .getString(R.string.list_item_forecast_icon_transition_name, position));
+        }
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
