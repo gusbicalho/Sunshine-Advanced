@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:padding="@dimen/widget_margin"
+             android:theme="@style/AppTheme">
+    <LinearLayout android:id="@+id/widget"
+                  android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="@color/primary"
+                  android:paddingLeft="8dp"
+                  android:paddingRight="8dp">
+
+        <ImageView
+            android:id="@+id/widget_icon"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            tools:src="@drawable/art_clear"
+            />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/widget_description"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            tools:text="Clear"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title.Inverse"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/widget_high_temperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title.Inverse"
+                tools:text="27°"/>
+
+            <TextView
+                android:id="@+id/widget_low_temperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse"
+                tools:text="8°"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>

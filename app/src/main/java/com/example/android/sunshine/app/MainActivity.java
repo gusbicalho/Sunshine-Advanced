@@ -15,6 +15,7 @@
  */
 package com.example.android.sunshine.app;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,7 +27,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -34,6 +34,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -48,7 +49,12 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
-    static final String PROJECT_NUMBER = "559098593343";
+
+    /**
+     * Substitute you own project number here. This project number comes
+     * from the Google Developers Console.
+     */
+    static final String PROJECT_NUMBER = "000";
 
     private boolean mTwoPane;
     private String mLocation;
@@ -58,9 +64,10 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mLocation = Utility.getPreferredLocation(this);
+        Uri contentUri = getIntent() != null ? getIntent().getData() : null;
 
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
@@ -73,8 +80,14 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             // adding or replacing the detail fragment using a
             // fragment transaction.
             if (savedInstanceState == null) {
+                DetailFragment fragment = new DetailFragment();
+                if (contentUri != null) {
+                    Bundle args = new Bundle();
+                    args.putParcelable(DetailFragment.DETAIL_URI, contentUri);
+                    fragment.setArguments(args);
+                }
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.weather_detail_container, new DetailFragment(), DETAILFRAGMENT_TAG)
+                        .replace(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG)
                         .commit();
             }
         } else {
@@ -85,8 +98,14 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         ForecastFragment forecastFragment =  ((ForecastFragment)getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_forecast));
         forecastFragment.setUseTodayLayout(!mTwoPane);
+        if (contentUri != null) {
+            forecastFragment.setInitialSelectedDate(
+                    WeatherContract.WeatherEntry.getDateFromUri(contentUri));
+        }
 
         SunshineSyncAdapter.initializeSyncAdapter(this);
+
+        /*
         // If Google Play Services is not available, some features, such as GCM-powered weather
         // alerts, will not be available.
         if (checkPlayServices()) {
@@ -107,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             // Store regID as null
             storeRegistrationId(this, null);
         }
+        */
     }
 
     @Override
@@ -128,21 +148,22 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         // If Google Play Services is not available, some features, such as GCM-powered weather
         // alerts, will not be available.
         if (!checkPlayServices()) {
-            storeRegistrationId(this, null);
+            // Store regID as null
         }
-        String location = Utility.getPreferredLocation( this );
+
+        String location = Utility.getPreferredLocation(this);
         // update the location in our second pane using the fragment manager
-            if (location != null && !location.equals(mLocation)) {
+        if (location != null && !location.equals(mLocation)) {
             ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
             if ( null != ff ) {
                 ff.onLocationChanged();
@@ -156,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     }
 
     @Override
-    public void onItemSelected(Uri contentUri, ForecastAdapter.ForecastAdapterViewHolder viewHolder) {
+    public void onItemSelected(Uri contentUri, ForecastAdapter.ForecastAdapterViewHolder vh) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
@@ -173,12 +194,10 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         } else {
             Intent intent = new Intent(this, DetailActivity.class)
                     .setData(contentUri);
+
             ActivityOptionsCompat activityOptions =
-                    ActivityOptionsCompat
-                            .makeSceneTransitionAnimation(this,
-                                    new Pair<View, String>(
-                                            viewHolder.mIconView,
-                                            getString(R.string.detail_icon_transition_name)));
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(this,
+                            new Pair<View, String>(vh.mIconView, getString(R.string.detail_icon_transition_name)));
             ActivityCompat.startActivity(this, intent, activityOptions.toBundle());
         }
     }
@@ -191,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     private boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
-            /*
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this,
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
@@ -199,10 +217,6 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
                 Log.i(LOG_TAG, "This device is not supported.");
                 finish();
             }
-            /*/
-            Log.i(LOG_TAG, "This device is not supported.");
-            finish();
-            //*/
             return false;
         }
         return true;
@@ -223,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             Log.i(LOG_TAG, "GCM Registration not found.");
             return "";
         }
-        Log.i(LOG_TAG, "GCM registrationId: "+registrationId);
 
         // Check if app was updated; if so, it must clear the registration ID
         // since the existing registration ID is not guaranteed to work with

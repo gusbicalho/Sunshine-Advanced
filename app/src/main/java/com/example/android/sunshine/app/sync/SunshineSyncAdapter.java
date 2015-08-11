@@ -2,6 +2,7 @@ package com.example.android.sunshine.app.sync;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
@@ -57,7 +58,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
-
+    public static final String ACTION_DATA_UPDATED =
+            "com.example.android.sunshine.app.ACTION_DATA_UPDATED";
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[] {
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -333,8 +335,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // delete old data so we don't build up an endless history
             getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                     WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
-                    new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
+                    new String[]{Long.toString(dayTime.setJulianDay(julianStartDay - 1))});
 
+            updateWidgets();
             notifyWeather();
         }
         setLocationStatus(getContext(), LOCATION_STATUS_OK);
@@ -437,6 +440,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 cursor.close();
             }
         }
+    }
+
+    private void updateWidgets() {
+        Context context = getContext();
+        context.sendBroadcast(new Intent(ACTION_DATA_UPDATED).setPackage(context.getPackageName()));
     }
 
     /**

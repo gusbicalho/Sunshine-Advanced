@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -125,13 +126,16 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         mCursor.moveToPosition(position);
         int weatherId = mCursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
         int defaultImage;
+        boolean useLongToday;
 
         switch (getItemViewType(position)) {
             case VIEW_TYPE_TODAY:
                 defaultImage = Utility.getArtResourceForWeatherCondition(weatherId);
+                useLongToday = true;
                 break;
             default:
                 defaultImage = Utility.getIconResourceForWeatherCondition(weatherId);
+                useLongToday = false;
         }
 
         if ( Utility.usingLocalGraphics(mContext) ) {
@@ -144,11 +148,15 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
                     .into(forecastAdapterViewHolder.mIconView);
         }
 
+        // this enables better animations. even if we lose state due to a device rotation,
+        // the animator can use this to re-find the original view
+        ViewCompat.setTransitionName(forecastAdapterViewHolder.mIconView, "iconView" + position);
+
         // Read date from cursor
         long dateInMillis = mCursor.getLong(ForecastFragment.COL_WEATHER_DATE);
 
         // Find TextView and set formatted date on it
-        forecastAdapterViewHolder.mDateView.setText(Utility.getFriendlyDayString(mContext, dateInMillis));
+        forecastAdapterViewHolder.mDateView.setText(Utility.getFriendlyDayString(mContext, dateInMillis, useLongToday));
 
         // Read weather forecast from cursor
         String description = Utility.getStringForWeatherCondition(mContext, weatherId);
@@ -174,13 +182,6 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         forecastAdapterViewHolder.mLowTempView.setContentDescription(mContext.getString(R.string.a11y_low_temp, lowString));
 
         mICM.onBindViewHolder(forecastAdapterViewHolder, position);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            forecastAdapterViewHolder.mIconView.setTransitionName(
-                    forecastAdapterViewHolder
-                            .mIconView
-                            .getContext()
-                            .getString(R.string.list_item_forecast_icon_transition_name, position));
-        }
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
